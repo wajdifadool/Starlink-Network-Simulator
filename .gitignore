@@ -1,0 +1,59 @@
+# Ignore Python bytecode files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Ignore virtual environment folder (venv)
+venv/
+# If using a different name for the virtual environment (e.g., .venv, env), add:
+# .venv/
+# env/
+
+# Ignore PyCharm project files
+.idea/
+
+# Ignore macOS system files
+.DS_Store
+
+# Ignore Windows system files
+Thumbs.db
+
+# Ignore log files
+*.log
+
+# Ignore test result files
+nosetests.xml
+coverage.xml
+*.cover
+*.hypothesis/
+
+# Ignore pipenv and poetry lock files (if used)
+Pipfile.lock
+poetry.lock
+
+# Ignore Jupyter Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Ignore environment variable configuration files
+.env
+.env.*
+
+# Ignore Python distribution packages
+*.egg
+*.egg-info
+dist/
+build/
+.eggs/
+
+# Ignore other generated files (e.g., JetBrains IDE files)
+.idea/
+
+# Ignore Python's virtualenvwrapper directory (if applicable)
+virtualenv/
+
+# Ignore .tox folder (if using tox for testing)
+.tox/
+
+# Ignore venv specific files (virtualenv-specific)
+venv/

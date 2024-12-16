@@ -1,0 +1,533 @@
+{
+  "Lekki, NG": {
+    "Longitude": 3.5877338921874777,
+    "Latitude": 6.449526175486871
+  },
+  "Ikire, NG": {
+    "Longitude": 4.2124,
+    "Latitude": 7.3875
+  },
+
+  "Akita, JP": {
+    "Longitude": 140.06466,
+    "Latitude": 39.63828
+  },
+
+  "Hitachinaka, JP": {
+    "Longitude": 140.61372,
+    "Latitude": 36.38673
+  },
+
+  "Otaru, JP": {
+    "Longitude": 141.258373,
+    "Latitude": 43.173215
+  },
+
+  "Yamaguchi, JP": {
+    "Longitude": 131.55566,
+    "Latitude": 34.2171
+  },
+
+  "Angeles, JP": {
+    "Longitude": 4.2124,
+    "Latitude": 7.3875
+  },
+
+  "Marathon, ON, CA": {
+    "Longitude": -86.3745279,
+    "Latitude": 48.7253692
+  },
+
+  "Saguenay, Quebec": {
+    "Longitude": -70.9088518,
+    "Latitude": 48.3136647
+  },
+
+  "Sambro Creek, NS, CA": {
+    "Longitude": -63.6131209,
+    "Latitude": 44.4645332
+  },
+
+  "St Johns, Newfoundland , CA ": {
+    "Longitude": -52.7754993,
+    "Latitude": 47.560921
+  },
+  "Caleta, DO": {
+    "Longitude": -69.66174,
+    "Latitude": 18.45398
+  },
+
+  "Charcas, MX": {
+    "Longitude": -100.97915,
+    "Latitude": 23.22612
+  },
+
+  "El Marques, MX": {
+    "Longitude": -100.33556,
+    "Latitude": 20.76082
+  },
+
+  "Llano Grande, MX": {
+    "Longitude": -99.58115,
+    "Latitude": 19.25892
+  },
+
+  "Mazahua, MX": {
+    "Longitude": -94.96423,
+    "Latitude": 16.60965
+  },
+
+  "Merida, MX": {
+    "Longitude": -89.643944,
+    "Latitude": 21.007372
+  },
+  "Monterey, MX": {
+    "Longitude": 100.30188,
+    "Latitude": 25.77016
+  },
+
+  "Peñuelas. MX": {
+    "Longitude": -102.27531,
+    "Latitude": 21.73139
+  },
+
+  "Tapachula, MX": {
+    "Longitude": -92.36717,
+    "Latitude": 14.7862
+  },
+
+  "Calverton, NY": {
+    "Longitude": -72.797608,
+    "Latitude": 40.908914
+  },
+
+  "Lynnwood, WA": {
+    "Longitude": -122.300944,
+    "Latitude": 47.841694
+  },
+
+  "Ponce, PR": {
+    "Longitude": -66.54783611111111,
+    "Latitude": 18.061977777777777
+  },
+
+  "Toa Baja. PR": {
+    "Longitude": -66.19208611111111,
+    "Latitude": 18.431055555555556
+  },
+
+  "Villenave d’Ornon, FR": {
+    "Longitude": -0.53738,
+    "Latitude": 44.78096
+  },
+
+  "Aerzen, DE": {
+    "Longitude": 9.328231,
+    "Latitude": 52.060989
+  },
+
+  "Frankfurt": {
+    "Longitude": 8.47082,
+    "Latitude": 50.3298
+  },
+
+  "Ballinspittle": {
+    "Longitude": -8.58805,
+    "Latitude": 51.64498
+  },
+
+  "Elfordstown": {
+    "Longitude": -8.17416,
+    "Latitude": 51.9532
+  },
+
+  "Foggia, IT": {
+    "Longitude": 15.658572,
+    "Latitude": 41.432803
+  },
+
+  "Marsala, IT ": {
+    "Longitude": 12.493115,
+    "Latitude": 37.794324
+  },
+
+  "Milano": {
+    "Longitude": 9.187329,
+    "Latitude": 45.318522
+  },
+
+  "Tromsø": {
+    "Longitude": 18.941619,
+    "Latitude": 69.661961
+  },
+
+  "Wola Krobowska, PL": {
+    "Longitude": 20.92105,
+    "Latitude": 51.86417
+  },
+
+  "Ibi, ES": {
+    "Longitude": -0.6007,
+    "Latitude": 38.60842
+  },
+
+  "Lepe, ES": {
+    "Longitude": -7.236135,
+    "Latitude": 37.255557
+  },
+
+  "Villarejo de Salvanes, ES": {
+    "Longitude": -3.2869,
+    "Latitude": 40.16758
+  },
+
+  "Chalfont Grove, UK": {
+    "Longitude": -0.57577,
+    "Latitude": 51.61549
+  },
+
+  "Fawley , UK": {
+    "Longitude": -1.337705,
+    "Latitude": 50.823297
+  },
+
+  "Goonhilly, UK": {
+    "Longitude": -5.18143,
+    "Latitude": 50.04964
+  },
+
+  "Wherstead, UK": {
+    "Longitude": 1.14354,
+    "Latitude": 52.019224
+  },
+
+  "Woodwalton, UK": {
+    "Longitude": -0.219117,
+    "Latitude": 52.404967
+  },
+
+  "Muallim, TR": {
+    "Longitude": 29.50939,
+    "Latitude": 40.78875
+  },
+
+  "Boorowa, NSW, AU": {
+    "Longitude": 148.70558,
+    "Latitude": -34.46214
+  },
+
+  "Broken Hill, NSW, AU": {
+    "Longitude": 141.4411,
+    "Latitude": -31.99829
+  },
+
+  "Warra, QLD, AU": {
+    "Longitude": 150.8916042,
+    "Latitude": -26.9079883
+  },
+
+  "Adelanto, California": {
+    "Latitude": 34.5828,
+    "Longitude": -117.4092
+  },
+  "Anchorage, Arkansas": {
+    "Latitude": 61.18586111111111,
+    "Longitude": -149.87688888888889
+  },
+  "Anderson, South Carolina": {
+    "Latitude": 34.5034,
+    "Longitude": -82.6501
+  },
+  "Angola, Indiana": {
+    "Latitude": 41.6348,
+    "Longitude": -84.9991
+  },
+  "Arbuckle, California": {
+    "Latitude": 39.0171,
+    "Longitude": -122.0572
+  },
+  "Arlington, Oregon": {
+    "Latitude": 45.7168,
+    "Longitude": -120.2
+  },
+  "Arvin, California": {
+    "Latitude": 35.2091,
+    "Longitude": -118.8281
+  },
+  "Atlanta, Georgia": {
+    "Latitude": 33.749,
+    "Longitude": -84.388
+  },
+  "Baxley, Georgia": {
+    "Latitude": 31.7785,
+    "Longitude": -82.3485
+  },
+  "Beekmantown, New York": {
+    "Latitude": 44.7864,
+    "Longitude": -73.5115
+  },
+  "Bellingham, Washington": {
+    "Latitude": 48.7491,
+    "Longitude": -122.4787
+  },
+  "Benkelman, Nebraska": {
+    "Latitude": 40.05,
+    "Longitude": -101.5335
+  },
+  "Blountsville, Alabama": {
+    "Latitude": 34.0743,
+    "Longitude": -86.5917
+  },
+  "Boca Chica, Texas": {
+    "Latitude": 25.997,
+    "Longitude": -97.155
+  },
+  "Boydton, Virginia": {
+    "Latitude": 36.6671,
+    "Longitude": -78.3897
+  },
+  "Brewster, Washington": {
+    "Latitude": 48.0943,
+    "Longitude": -119.7848
+  },
+  "Broadview, Illinois": {
+    "Latitude": 41.8639,
+    "Longitude": -87.8545
+  },
+  "Brunswick, Maine": {
+    "Latitude": 43.914,
+    "Longitude": -69.9653
+  },
+  "Butte, Montana": {
+    "Latitude": 46.0038,
+    "Longitude": -112.5348
+  },
+  "Cass County, North Dakota": {
+    "Latitude": 46.937,
+    "Longitude": -97.2414
+  },
+  "Charleston, Oregon": {
+    "Latitude": 43.3451,
+    "Longitude": -124.3243
+  },
+  "Charleston, South Carolina": {
+    "Latitude": 32.7765,
+    "Longitude": -79.9311
+  },
+  "Cheyenne, Wyoming": {
+    "Latitude": 41.14,
+    "Longitude": -104.8202
+  },
+  "Clinton, Illinois": {
+    "Latitude": 40.1534,
+    "Longitude": -88.9645
+  },
+  "Colburn, Idaho": {
+    "Latitude": 48.3652,
+    "Longitude": -116.5452
+  },
+  "Columbus, Ohio": {
+    "Latitude": 39.9612,
+    "Longitude": -82.9988
+  },
+  "Conrad, Montana": {
+    "Latitude": 48.175,
+    "Longitude": -111.9486
+  },
+  "Des Moines, Iowa": {
+    "Latitude": 41.5868,
+    "Longitude": -93.625
+  },
+  "Dumas, Texas": {
+    "Latitude": 35.8656,
+    "Longitude": -101.9738
+  },
+  "Elbert, Colorado": {
+    "Latitude": 39.2183,
+    "Longitude": -104.5405
+  },
+  "Elkton, Maryland": {
+    "Latitude": 39.6068,
+    "Longitude": -75.8333
+  },
+  "Evanston, Wyoming": {
+    "Latitude": 41.2683,
+    "Longitude": -110.9638
+  },
+  "Fairbanks, Alaska": {
+    "Latitude": 64.8378,
+    "Longitude": -147.7164
+  },
+  "Fort Lauderdale, Florida": {
+    "Latitude": 26.1224,
+    "Longitude": -80.1373
+  },
+  "Frederick, Maryland": {
+    "Latitude": 39.4143,
+    "Longitude": -77.4105
+  },
+  "Gaffney, South Carolina": {
+    "Latitude": 35.0718,
+    "Longitude": -81.6498
+  },
+  "Greenville, Pennsylvania": {
+    "Latitude": 41.4037,
+    "Longitude": -80.3823
+  },
+  "Hamshire, Texas": {
+    "Latitude": 29.8513,
+    "Longitude": -94.3135
+  },
+  "Hawthorne, California": {
+    "Latitude": 33.9164,
+    "Longitude": -118.3526
+  },
+  "Hillman, Michigan": {
+    "Latitude": 45.0653,
+    "Longitude": -83.9014
+  },
+  "Hillsboro, Texas": {
+    "Latitude": 32.0101,
+    "Longitude": -97.13
+  },
+  "Hitterdal, Minnesota": {
+    "Latitude": 46.9733,
+    "Longitude": -96.2581
+  },
+  "Inman, Kansas": {
+    "Latitude": 38.2311,
+    "Longitude": -97.7714
+  },
+  "Kalama, Washington": {
+    "Latitude": 46.0084,
+    "Longitude": -122.8443
+  },
+  "Kenansville, Florida": {
+    "Latitude": 28.0231,
+    "Longitude": -81.0517
+  },
+  "Ketchikan, Alaska": {
+    "Latitude": 55.3422,
+    "Longitude": -131.6461
+  },
+  "Kuparuk, Alaska": {
+    "Latitude": 70.33,
+    "Longitude": -149.5983
+  },
+
+  "Nairobi, KE - Cabanas | Mega": {
+    "Latitude": -1.329119,
+    "Longitude": 36.88643
+  },
+  "Accra, GH": {
+    "Latitude": 5.80399,
+    "Longitude": -0.090984
+  },
+  "Singapore, SG": {
+    "Latitude": 1.397598,
+    "Longitude": 103.83539
+  },
+  "Cikarang Barat, ID - Almat GW": {
+    "Latitude": -6.306293,
+    "Longitude": 107.096755
+  },
+  "Petra Jaya, MY": {
+    "Latitude": 1.606503,
+    "Longitude": 110.340002
+  },
+  "Palangka Raya, ID": {
+    "Latitude": -2.21866,
+    "Longitude": 113.9254
+  },
+  "Kendari, ID": {
+    "Latitude": -3.977445,
+    "Longitude": 122.511309
+  },
+  "Bulla Bulling, WA, AU": {
+    "Latitude": -31.02985,
+    "Longitude": 120.81962
+  },
+  "Merredin, WA, AU": {
+    "Latitude": -31.49485,
+    "Longitude": 118.27765
+  },
+  "Cataby, WA, AU": {
+    "Latitude": -30.84826,
+
+    "Longitude": 115.61927
+  },
+  "Pimba, SA, AU (GSN#3023)": {
+    "Latitude": -31.2507,
+    "Longitude": 136.80107
+  },
+  "Broken Hill, NSW, AU (GSN#56)": {
+    "Latitude": -31.99829,
+    "Longitude": 141.4411
+  },
+  "Ki Ki, SA, AU": {
+    "Latitude": -35.57172,
+    "Longitude": 139.8174
+  },
+  "Torrumbarry, VIC, AU": {
+    "Latitude": -36.02526,
+    "Longitude": 144.50011
+  },
+  "Anakie, VIC, AU": {
+    "Latitude": -37.953169,
+    "Longitude": 144.328172
+  },
+  "Koonwarra, VIC, AU": {
+    "Latitude": -38.51812,
+    "Longitude": 145.95145
+  },
+  "Cobargo, NSW, AU": {
+    "Latitude": -36.38863,
+    "Longitude": 149.8914
+  },
+  "Bathurst, NSW, AU | Mega": {
+    "Latitude": -33.436665,
+    "Longitude": 149.52242
+  },
+  "Macquarie Park, NSW, AU | Mega": {
+    "Latitude": -33.785441,
+    "Longitude": 151.131806
+  },
+  "Springbrook Creek, NSW, AU": {
+    "Latitude": -30.43981,
+    "Longitude": 149.68385
+  },
+  "Calrossie, NSW, AU": {
+    "Latitude": -29.0579,
+    "Longitude": 150.04031
+  },
+  "Willows. QLD, AU": {
+    "Latitude": -23.66665,
+    "Longitude": 147.5025
+  },
+  "Sellheim, QLD, AU": {
+    "Latitude": -19.999722,
+    "Longitude": 146.42166
+  },
+  "Quezon (province), PH": {
+    "Latitude": 13.953,
+    "Longitude": 121.699
+  },
+  "Angeles, PH": {
+    "Latitude": 15.17087,
+    "Longitude": 120.505747
+  },
+  "Nueva Vizcaya (Province), PH": {
+    "Latitude": 16.423,
+    "Longitude": 121.114
+  },
+  "Molokai, HI": {
+    "Latitude": 21.1127,
+
+    "Longitude": -157.06323
+  },
+  "Nome, AK": {
+    "Latitude": 64.5035,
+
+    "Longitude": -165.42830555555554
+  }
+}
