@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import QApplication
 
 def main():
 
+
     ground_control = GroundControl()
 
     app = QApplication([])

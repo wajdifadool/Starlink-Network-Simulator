@@ -29,9 +29,6 @@ class GroundControl:
         lats = [data["Latitude"] for data in self.gs_raw.values()]
         return lats, longs
 
-    def gr_stations(self):
-        print(self.gs_raw)
-
     def sats_list(self):
         t = self.ts.now()
         temp = []
@@ -65,11 +62,10 @@ class GroundControl:
         # If the midpoint is outside Earth's radius, satellites have a line of sight
         return distance_to_earth_center > wgs84.polar_radius.km
 
-    #
-    # def load_sats_by_name(self):
-    #     sats = self.filemanger.load_satellites_files()
-    #     by_name = {sat.name:sat for sat in sats }
-    #     return by_name
+    def load_sats_by_name(self):
+        sats_raw = self.sats_raw
+        by_name = {sat.name:sat for sat in sats_raw }
+        return by_name
 
     #
     # def format_satlites_file_into_dict(self ):

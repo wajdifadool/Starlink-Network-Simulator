@@ -1,5 +1,8 @@
-from models.satellite import Satellite
+from skyfield.api import wgs84
 
+
+from models.satellite import Satellite
+import numpy as np
 
 class GraphUtils:
     def __init__(self, satellites: list):
@@ -11,8 +14,7 @@ class GraphUtils:
 
     def shortest_path(self, start: Satellite, end: Satellite) -> list:
         """Find the shortest path between two satellites."""
-
         pass
     def scenario_number_1(self):
         """What scenario goes here ?"""
-        pass
+    pass

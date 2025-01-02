@@ -1,4 +1,3 @@
-from models.world_map import  WorldMap
 class Simulation:
     def __init__(self, satellites: list , ground_stations:list, users: list, world_map, WorldMap ):
         self.satellites = satellites
