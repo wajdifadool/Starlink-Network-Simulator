@@ -7,7 +7,7 @@ class TestLoadingFiles(unittest.TestCase):
 
     def test_load_stas_file(self):
         print("test_load_stas_file")
-        self.assertIsNotNone(self.fm.load_satellites_file() )
+        self.assertIsNotNone(self.fm.load_tle_file_into_list())
         #
     def test_loadig_ground_stations_file(self):
         print("test_loadig_ground_stations_file")

@@ -1,4 +1,3 @@
-
 import cartopy.crs as ccrs
 import cartopy.feature as cfeature
 from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget
@@ -17,7 +16,9 @@ from models.satellite import Satellite
 class SatelliteTracker(QMainWindow):
     def __init__(self, ground_control:GroundControl):
         super().__init__()
-        self.update_interval:int = 5000
+        self.satellite_annotations = []  # Store annotations for satellites
+
+        self.update_interval:int = (10*(10**3))
         self.gc =  ground_control
         self.setWindowTitle("Real-Time Satellite Tracker")
 
@@ -46,15 +47,6 @@ class SatelliteTracker(QMainWindow):
         self.ax.add_feature(cfeature.COASTLINE)
         self.ax.set_title("Real-Time Starlink Satellite Tracker" , pad=10)
 
-        # TODO: DO we need this ?
-        # # Initialize rectangle selector
-        # self.rectangle_selector = RectangleSelector(
-        #     self.ax,
-        #     self.on_select,
-        #     interactive=True,
-        #     button=[1],  # Left mouse button
-        #     useblit=True  # Optimized rendering
-        # )
 
         # Initial plotting
         self.satellite_scatter = None
@@ -68,9 +60,18 @@ class SatelliteTracker(QMainWindow):
 
     def plot_satellites(self):
         """Plot satellites on the map."""
-        sats_tuple = self.gc.sats_xy
-        latitudes = sats_tuple[0]
-        longitudes = sats_tuple[1]
+        # print("calling  updat e satlites ")
+
+        # Remove old annotations if any
+        for annotation in self.satellite_annotations:
+            annotation.remove()
+        self.satellite_annotations.clear()
+
+
+        lats_longs = self.gc.fetch_lat_long()
+        latitudes = lats_longs[0]
+        longitudes = lats_longs[1]
+
 
         # Plot satellites as red points
         self.satellite_scatter = self.ax.scatter(
@@ -81,10 +82,23 @@ class SatelliteTracker(QMainWindow):
             marker="s",
             transform=ccrs.PlateCarree(),
         )
-        self.canvas.draw()
 
+        # Annotate each satellite with its name
+        for name, (lat, lon, _) in self.gc.dict_name_lat_lng.items():
+            annotation = self.ax.annotate(
+                name,
+                xy=(lon, lat),
+                xytext=(3, 3),  # Offset the text slightly
+                textcoords='offset points',
+                fontsize=6,
+                color='black',
+                transform=ccrs.PlateCarree(),
+            )
+            self.satellite_annotations.append(annotation)
+        self.canvas.draw()
+    #
     def plot_stations(self):
-        gs_tuples = self.gc.gs_xy
+        gs_tuples = self.gc.ground_stations_long_lats
         latitudes = gs_tuples[0]
         longitudes = gs_tuples[1]
 
@@ -101,51 +115,9 @@ class SatelliteTracker(QMainWindow):
 
 
     def update_satellite_positions(self):
+        # print("calling update UI ")
+        if self.satellite_scatter:
+            self.satellite_scatter.remove()
 
-        self.satellite_scatter.remove()
-        self.gc.update_stas_poitions()
+        self.gc.refresh_dict_lat_lng()
         self.plot_satellites()
-
-    # TODO: do we need this ?
-    # def on_select(self, eclick, erelease):
-    #     """Handle rectangle selection."""
-    #     # Convert rectangle bounds to map coordinates
-    #     lon_min, lon_max = sorted([eclick.xdata, erelease.xdata])
-    #     lat_min, lat_max = sorted([eclick.ydata, erelease.ydata])
-    #
-    #     # Ensure valid coordinates
-    #     if None in (lon_min, lon_max, lat_min, lat_max):
-    #         return
-    #
-    #     # Select satellites within the rectangle
-    #     selected_satellites = []
-    #
-    #     for sat in self.satellite_data:
-    #         if lon_min <= sat["longitude"] <= lon_max and lat_min <= sat["latitude"] <= lat_max:
-    #             selected_satellites.append(sat)
-    #
-    #     # Select stations within the rectangle
-    #     selected_stations = []
-    #     for name, data in self.station_data.items():
-    #         if lon_min <= data["Longitude"] <= lon_max and lat_min <= data["Latitude"] <= lat_max:
-    #             selected_stations.append({"name": name, "latitude": data["Latitude"], "longitude": data["Longitude"]})
-    #
-    #     # Print selected satellites
-    #     if selected_satellites:
-    #         print(f"Found {len(selected_satellites)} Satellites:")
-    #         for sat in selected_satellites:
-    #             print(
-    #                 f"  Name: {sat['name']}, Latitude: {sat['latitude']:.2f}, Longitude: {sat['longitude']:.2f}, Elevation: {sat['elevation_km']:.2f} km"
-    #             )
-    #     else:
-    #         print("No satellites found in the selected region.")
-    #
-    #     # Print selected stations
-    #     if selected_stations:
-    #         print(f"Found {len(selected_stations)} Stations:")
-    #         for station in selected_stations:
-    #             print(
-    #                 f"  Name: {station['name']}, Latitude: {station['latitude']:.2f}, Longitude: {station['longitude']:.2f}"
-    #             )
-    #     else:
-    #         print("No stations found in the selected region.")

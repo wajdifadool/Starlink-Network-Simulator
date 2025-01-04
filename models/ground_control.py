@@ -1,103 +1,121 @@
 from models.file_manager import  FileManager
 from skyfield.api import load
-
 from models.satellite import Satellite
-
 import  numpy as np
 from skyfield.api import  wgs84
+import  time
 
-
+import  logging
 class GroundControl:
+    """
+    A class to manage satellite data and ground station information
+     for tracking and operations.
+    """
     def __init__(self):
+        """
+        Initializes the GroundControl instance by loading satellite and ground
+        station data,and preparing dictionaries for satellite and ground
+        station information.
+        """
         self.ts = load.timescale()
-        self.fm = FileManager()
-        self.sats_raw = self.fm.load_satellites_file()
-        self.sats = self.sats_list()
-        self.sats_xy = self.stas_long_lats()
+        self.file_manager = FileManager()
+        self.sats_raw = self.file_manager.load_tle_file_into_list()
+        self.stats_list_clean = self.remove_unwanted_elevations()
+        self.sats_dict_object_raw = self.create_sats_dict_object_raw()
+        self.dict_name_lat_lng = self.create_sats_dict_lat_lng()
 
-        self.gs_raw = self.fm.load_ground_stations()
-        self.gs_xy = self.gs_long_lats()
+        self.ground_stations_raw = self.file_manager.load_ground_stations()
+        self.ground_stations_long_lats = self.create_ground_stations_long_lats(self.ground_stations_raw)
 
-    def stas_long_lats(self):
-        lats = [float(sat.latitude) for sat in self.sats]
-        longs = [float(sat.longitude) for sat in self.sats]
+
+    def create_ground_stations_long_lats(self , ground_stations_raw):
+        """
+        Extracts latitude and longitude information from raw ground station data
+        :param ground_stations_raw: Raw ground station data.
+        :return: tuple: Two lists containing latitudes and longitudes of
+        the ground stations.
+        """
+        longs = [data["Longitude"] for data in self.ground_stations_raw.values()]
+        lats = [data["Latitude"] for data in self.ground_stations_raw.values()]
         return lats, longs
 
-    def gs_long_lats(self):
 
-        longs = [data["Longitude"] for data in self.gs_raw.values()]
-        lats = [data["Latitude"] for data in self.gs_raw.values()]
-        return lats, longs
-
-    def sats_list(self):
+    def remove_unwanted_elevations(self):
+        """
+        Filters satellites based on elevation, keeping only those above 400 km.
+        :return: list: A list of satellites with elevations greater than 400 km.
+        """
         t = self.ts.now()
         temp = []
         for sat in self.sats_raw:
             geometry = sat.at(t)
 
             subpoint = geometry.subpoint()
-            lat =subpoint.latitude.degrees
+            elevation = subpoint.elevation.km
+            if elevation > 400:
+                temp.append(sat)
+        logging.debug(f'number of satlites remaing are : {len(temp)}')
+        return temp
+
+    def create_sats_dict_object_raw(self):
+        """
+        Creates a dictionary of satellite objects with their name as the key.
+        :return:dict: A dictionary mapping satellite names to Satellite objects.
+        """
+        t = self.ts.now()
+        temp = dict()
+        for sat in self.stats_list_clean:
+            a = sat
+            geometry = sat.at(t)
+            subpoint = geometry.subpoint()
+            lat = subpoint.latitude.degrees
             lng = subpoint.longitude.degrees
             elevation = subpoint.elevation.km
             name = sat.name
-            sat_obj  = Satellite(name ,lat , lng , elevation)
-            if elevation>400: #ToDO : HINT : is it elevatino form sea level, if so ? how height this coordinate above sea level ?
-                temp.append(sat_obj)
-        print(len(temp))
+            sat_obj = Satellite(name, lat, lng, elevation)
+            temp[name] = sat_obj
         return temp
 
-    def update_stas_poitions(self):
-        print("Updating")
-        self.sats = self.sats_list()
-        self.sats_xy = self.stas_long_lats()
 
-    def has_line_of_sight(self , pos1_xyz, pos2_xyz):
-        # Vector between satellites
-        vector = np.array(pos2_xyz) - np.array(pos1_xyz)
-        midpoint = np.array(pos1_xyz) + 0.5 * vector
+    def create_sats_dict_lat_lng(self):
+        """
+        Creates a dictionary with satellite names as keys
+        and their positions (latitude, longitude, and 3D position) as values.
 
-        # Distance of the midpoint from Earth's center
-        distance_to_earth_center = np.linalg.norm(midpoint)
+        # THIS FUNCTION GET CALLED EACH X SECONDS WHEN WE UPDATE THE UI LAT AND LONG
+        :return: dict: A dictionary mapping satellite names to their
+        positional data.
+        """
+        t = self.ts.now()
+        temp = dict()
+        for sat in self.stats_list_clean:
+            geometry = sat.at(t)
+            subpoint = geometry.subpoint()
+            lat = subpoint.latitude.degrees
+            lng = subpoint.longitude.degrees
+            name = sat.name
 
-        # If the midpoint is outside Earth's radius, satellites have a line of sight
-        return distance_to_earth_center > wgs84.polar_radius.km
+            # Save the Position object
+            sat_xyz   =  geometry.position.km
+            temp[name]  =  (lat , lng , sat_xyz )
+        return temp
 
-    def load_sats_by_name(self):
-        sats_raw = self.sats_raw
-        by_name = {sat.name:sat for sat in sats_raw }
-        return by_name
+    def refresh_dict_lat_lng(self):
+        """
+        Refreshes the dictionary of satellite positional data by
+         updating it with the latest values.
+        :return:
+        """
+        self.dict_name_lat_lng = self.create_sats_dict_lat_lng()
 
-    #
-    # def format_satlites_file_into_dict(self ):
-    #     # load the stalites
-    #     satellites = self.filemanger.load_satellites_files()
-    #
-    #     # Key = sat.model.satnum , [03-07] The unique satellite NORAD catalog number given in the TLE file. Ex: 2554
-    #     # Value = sat
-    #
-    #     t = self.ts.now()
-    #
-    #     sats_dict = dict()
-    #     start = time.time()
-    #     for satellite in satellites:
-    #         geometry = satellite.at(t)
-    #         subpoint = geometry.subpoint()
-    #
-    #         if subpoint.elevation.km > 400:
-    #             sat_santum = satellite.model.satnum
-    #
-    #             sats_dict[sat_santum] = Satellite(
-    #                 sat_santum,
-    #                 latitude= subpoint.latitude.degrees,
-    #                 longitude= subpoint.longitude.degrees,
-    #                 altitude=subpoint.elevation.km,
-    #                 sat=satellite
-    #             )
-    #
-    #     end = time.time()
-    #     print("Execution Time inserting Sats to Dict= " , (end-start)   , "seconds")
-    #
-    #     # mydict  ={ sat.model.satnum : Satellite(sats)  sat.at(t).subpoint() for sat in sats }
-    #     print(len(sats_dict))
-    #
-    #     return sats_dict
+    # TODO: CONSIDER calculating this in other thread, the need that each
+    #  time we fetch the latest (lat , long) the data already avalebile
+    #  and not blocking the ui
+    def fetch_lat_long(self):
+        """
+        Fetches latitude and longitude values from the satellite position dictionary.
+        :return: tuple: Two lists containing latitudes and longitudes of satellites.
+        """
+        lats = [obj[0] for obj in self.dict_name_lat_lng.values()]
+        longs = [obj[1] for obj in self.dict_name_lat_lng.values()]
+        return lats, longs
