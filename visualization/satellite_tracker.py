@@ -11,14 +11,16 @@ from skyfield.api import load
 
 from  models.ground_control import GroundControl
 from models.satellite import Satellite
+import  models.utils as utils
 
 
 class SatelliteTracker(QMainWindow):
-    def __init__(self, ground_control:GroundControl):
+    def __init__(self, ground_control:GroundControl , users):
         super().__init__()
+        print("SatelliteTracker Invoked")
         self.satellite_annotations = []  # Store annotations for satellites
-
-        self.update_interval:int = (10*(10**3))
+        self.users= users
+        self.update_interval:int = (utils.UPDATE_LENGTH_IN_SEC*(10**3))
         self.gc =  ground_control
         self.setWindowTitle("Real-Time Satellite Tracker")
 
@@ -52,11 +54,12 @@ class SatelliteTracker(QMainWindow):
         self.satellite_scatter = None
         self.plot_satellites()
         self.plot_stations()
+        self.plot_users()
 
         # Set up timer for updates
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_satellite_positions)
-        self.timer.start(self.update_interval)  # Update every 20 seconds
+        self.timer.start(self.update_interval)  # Update every X seconds
 
     def plot_satellites(self):
         """Plot satellites on the map."""
@@ -83,6 +86,11 @@ class SatelliteTracker(QMainWindow):
             transform=ccrs.PlateCarree(),
         )
 
+        # self.plot_stations_names()
+        self.canvas.draw()
+
+    # plot stasions names , used for debuging
+    def plot_stations_names(self):
         # Annotate each satellite with its name
         for name, (lat, lon, _) in self.gc.dict_name_lat_lng.items():
             annotation = self.ax.annotate(
@@ -95,8 +103,7 @@ class SatelliteTracker(QMainWindow):
                 transform=ccrs.PlateCarree(),
             )
             self.satellite_annotations.append(annotation)
-        self.canvas.draw()
-    #
+
     def plot_stations(self):
         gs_tuples = self.gc.ground_stations_long_lats
         latitudes = gs_tuples[0]
@@ -113,7 +120,6 @@ class SatelliteTracker(QMainWindow):
         )
         self.ax.legend()
 
-
     def update_satellite_positions(self):
         # print("calling update UI ")
         if self.satellite_scatter:
@@ -121,3 +127,17 @@ class SatelliteTracker(QMainWindow):
 
         self.gc.refresh_dict_lat_lng()
         self.plot_satellites()
+
+    def plot_users(self):
+        latitudes = [user.lat for user in self.users]
+        longitudes =[user.lon for user in self.users]
+
+        self.ax.scatter(
+            longitudes,
+            latitudes,
+            color="green",
+            s=5,
+            transform=ccrs.PlateCarree(),
+            marker="s",
+        )
+        self.ax.legend()

@@ -17,6 +17,8 @@ class GroundControl:
         station data,and preparing dictionaries for satellite and ground
         station information.
         """
+        print("Ground Control invoked")
+
         self.ts = load.timescale()
         self.file_manager = FileManager()
         self.sats_raw = self.file_manager.load_tle_file_into_list()
