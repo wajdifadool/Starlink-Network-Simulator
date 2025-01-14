@@ -13,9 +13,10 @@ from models.file_manager import FileManager
 
 # Graph utils constants
 class CAPACITY(Enum):
-    S2S = 2000  # satellite_to_satellite
-    S2G = 800000 # satellite_to_ground
-    S2U =  200 #  satellite_to_user
+    S2S = 200  # satellite_to_satellite
+    S2G = 80 # satellite_to_ground
+    S2U =  0.2 #  satellite_to_user
+
 class Graph_nodes(Enum):
     Satellite = 1
     Ground_station = 2
@@ -42,6 +43,8 @@ class GraphUtils :
 
         if load_graph_from_file :
             self.network = pickle.load(open('graph.pickle', 'rb'))
+            k = 12
+
         else:
             self.build_connectivity_graph_for_max_flow()
             # save graph object to file
@@ -56,6 +59,7 @@ class GraphUtils :
             self.flow_obj = pickle.load(open('max_flow_obj.pickle', 'rb'))
             print("loaded flow_obj from file")
             flow_dict = self.flow_obj["flow_dict"]
+            l= 12
 
             sorted_nodes = self.get_most_used_nodes(flow_dict)
 
