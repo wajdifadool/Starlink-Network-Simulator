@@ -1,4 +1,4 @@
-from skyfield.api import wgs84, load
+from skyfield.api import wgs84
 import networkx as nx
 import  numpy as np
 import time
@@ -10,170 +10,189 @@ from enum import Enum
 import  pickle
 from models.satellite import Satellite
 from models.file_manager import FileManager
+from  models.ground_control import  GroundControl
+import math
+import numpy as np
+from skyfield.api import wgs84
+from itertools import combinations
+from random import  shuffle
 
+EARTH_RADIUS = wgs84.polar_radius.km
 # Graph utils constants
 class CAPACITY(Enum):
-    S2S = 200  # satellite_to_satellite
-    S2G = 80 # satellite_to_ground
-    S2U =  0.2 #  satellite_to_user
+    S2S = 200//10   # satellite_to_satellite  # 200GB
+    S2G = 80      # satellite_to_ground       # 80GB
+    S2U = 0.2     # satellite_to_user      # 0.2GB = 200MB
+
 
 class Graph_nodes(Enum):
-    Satellite = 1
+    Satellite =      1
     Ground_station = 2
-    User = 3
+    User =           3
 
 INFINITY = float('inf')
-ROOT_GC = "root_gc"  # this is our sink
+ROOT_GC = "root_gc"     # this is our sink
 ROOT_USER = 'root_user' # this is the Source
-
+default_distance = 2000
 
 class GraphUtils :
-    def __init__(self, ground_control , ground_users):
-        print("GraphUtils invoked")
-        self.ground_control  = ground_control
-        self.satellites_dict: dict = ground_control.sats_dict_object_raw
-        self.satellites_dict_lats_longs: dict = ground_control.dict_name_lat_lng # Holds <name>: <lat , lng , xyz>
+    def __init__(self, ground_control:GroundControl , ground_users , sats):
+        print("GraphUtils():: __INIT__ invoked")
 
-        self.ground_stations_raw = self.ground_control.ground_stations_raw
-        self.network = nx.DiGraph()
+        self.ground_control  = ground_control
+        self.satellites =  sats
+        self.ground_stations = self.ground_control.my_ground_stations
         self.users = ground_users
 
+        self.network:nx.DiGraph = nx.DiGraph()
+        self.build_connectivity_graph_for_max_flow()
 
-        load_graph_from_file = True
-
-        if load_graph_from_file :
-            self.network = pickle.load(open('graph.pickle', 'rb'))
-            k = 12
-
-        else:
-            self.build_connectivity_graph_for_max_flow()
-            # save graph object to file
-            pickle.dump(self.network, open('graph.pickle', 'wb'))
-
-
-        print(f" self.network = {self.network}")
-
-        load_max_flow_from_file= True
-
-        if load_max_flow_from_file:
-            self.flow_obj = pickle.load(open('max_flow_obj.pickle', 'rb'))
-            print("loaded flow_obj from file")
-            flow_dict = self.flow_obj["flow_dict"]
-            l= 12
-
-            sorted_nodes = self.get_most_used_nodes(flow_dict)
-
-        else:
-            max_flow_value, flow_dict = self.simulate_max_flow(ROOT_GC, ROOT_USER)
-            flow_obj = {
-                "max_flow_value": max_flow_value,
-                "flow_dict": flow_dict
-            }
-
-            pickle.dump(flow_obj, open('max_flow_obj.pickle', 'wb'))
-            print("saved flow_obj into file")
-
-
-        # nx.draw(G, with_labels=True)
-        # plt.show()
-
-
-        # median = self.calculate_avg_of_medians()
-        # print(median)
-
+        max_flow, flow_dict  = self.simulate_max_flow(ROOT_GC, ROOT_USER)
+        self.network_max_flow = max_flow
+        self.save_flow_most_used_node(flow_dict)
+        # 50 * 2 = 100GB,
+        print(f"GraphUtils:: max flow is  ={max_flow} GB")
 
     def build_connectivity_graph_for_max_flow(self):
-        """Build a graph of satellite connectivity based on line of sight
-
-        each Node splits into 2 node, node_in, node_out and the capicity is now betwwen in and out"""
+        """
+         Build a graph of satellite connectivity based on line of sight
+         each Node splits into 2 node, node_in, node_out and the
+         capicity is now betwwen in and out
+        """
 
         print("build_connectivity_graph() --> started")
         start = time.time()
         self.connect_satellites()
         self.connect_ground_stations()
-        self.connect_users() # todo: this is scinario
-
+        self.connect_users(self.users)
         end = time.time()
+
         print("build_connectivity_graph() --> Completed ")
         print(f"time took {end - start} for{self.network}")
 
-
-    # GRAPHS methods
     def connect_satellites(self):
-
-        # add the  satlites as nodes
-        for sat_name in self.satellites_dict.keys():
-            self.network.add_node(f"{sat_name}_in", type=Graph_nodes.Satellite)
+        # add the sats as nodes
+        for sat in self.satellites:
+            sat_name = sat.satellite_id
+            self.network.add_node(f"{sat_name}_in", type=Graph_nodes.Satellite , lat=sat.latitude , lon=sat.longitude)
             self.network.add_node(f"{sat_name}_out", type=Graph_nodes.Satellite)
             self.network.add_edge(f"{sat_name}_in", f"{sat_name}_out", capacity=CAPACITY.S2S.value)
 
         # Add edges between satellites based on LOS
-        for sat1_name, sat1 in self.satellites_dict_lats_longs.items():
-            for sat2_name, sat2 in self.satellites_dict_lats_longs.items():
-                if sat1_name != sat2_name:
-                    sat1_xyz = sat1[2]
-                    sat2_xyz = sat2[2]
-
-                    # TODO: ennhance calulcation if posiple do some memoiztion if sta1_sat2 line of
-                    #  sight calculted before , dont calucalte again
-                    if self.has_line_of_sight_sat_to_sat(sat1_xyz, sat2_xyz):
-                        self.network.add_edge(f"{sat1_name}_out", f"{sat2_name}_in",  capacity=INFINITY)
-                        self.network.add_edge(f"{sat2_name}_out", f"{sat1_name}_in", capacity=INFINITY)
+        for sat1 , sat2  in combinations(self.satellites ,2):
+            sat1_xyz = sat1.sat_xyz
+            sat2_xyz = sat2.sat_xyz
+            sat1_name = sat1.satellite_id
+            sat2_name = sat2.satellite_id
+            if self.has_los_sat_sat(sat1_xyz, sat2_xyz):
+                self.network.add_edge(f"{sat1_name}_out", f"{sat2_name}_in", capacity=INFINITY )
+                self.network.add_edge(f"{sat2_name}_out", f"{sat1_name}_in", capacity=INFINITY)
 
     def connect_ground_stations(self):
         # Adding the Ground Stations Nodes
-        m_gc = self.ground_stations_raw
+        ground_stations = self.ground_stations
+        satellites =  self.satellites
         # Add main Ground station Node and Edges
         self.network.add_node(ROOT_GC, type=Graph_nodes.Ground_station)
 
-        # Example:   for the key, value loop
-        # gc_name: Molokai, HI
-        # gc_coords : {'Latitude': 21.1127, 'Longitude': -157.06323}
-        for gc_name, gc_coords in m_gc.items():
-            lat = gc_coords['Latitude']
-            lon = gc_coords['Longitude']
-            self.network.add_node(gc_name, type=Graph_nodes.Ground_station, lat=lat, lon=lon)
-            self.network.add_edge(ROOT_GC, gc_name, capacity=CAPACITY.S2G.value)
+        for gc in ground_stations:
+            self.network.add_node(gc.station_id, type=Graph_nodes.Ground_station)
+            self.network.add_edge(ROOT_GC, gc.station_id, capacity=CAPACITY.S2G.value)
 
+        for gc in ground_stations:
+            ground_xyz = gc.xyz
+            gc_name = gc.station_id
+            for sat in satellites:
+                if self.has_los_earth_sat(sat.sat_xyz, ground_xyz):
+                    self.network.add_edge(gc_name, f"{sat.satellite_id}_in", capacity=INFINITY)
 
-        # Adding the Ground station->satlite Edges
-        for station_name , station in m_gc.items():
-            # TODO: calculate xyz pre run and add them to json file
-            # Convert ground station lat/lon to XYZ using WGS84
-            ground_position = wgs84.latlon(station['Latitude'], station['Longitude'])
-            ground_xyz = ground_position.itrs_xyz.km  # Convert from AU to km directly
-
-            for sat_name, sat in self.satellites_dict_lats_longs.items():
-                # Satellite position in XYZ (already in Cartesian coordinates)
-                sat_xyz = np.array(sat[2])
-                has_line_of_sight = self.has_line_of_sight_sat_to_ground_station(sat_xyz,ground_xyz )
-                if has_line_of_sight :
-                    self.network.add_edge(station_name, f"{sat_name}_in", capacity=INFINITY)
-
-
-        k= self.network
-
-        j = 9
-
-    def connect_users(self):
-        # adding the users
-        k=4
-        for user in self.users:
+    def connect_users(self, users):
+        m_set= set()
+        connected_sats = {}
+        # adding the users , each group is of k users
+        group_size = 50
+        for user in users:
             user_xyz = user.xyz
-            for sat_name, sat in self.satellites_dict_lats_longs.items():
-                sat_xyz = np.array(sat[2])  # Cartesian coordinates
-                has_line_of_sight = self.has_line_of_sight_sat_to_ground_station(sat_xyz, user_xyz,
-                                                                                 default_distance=1750)
-                if has_line_of_sight:
-                    self.network.add_edge(f"{sat_name}_out", user.user_id, capacity=INFINITY)
-                    break  # conect only once
-        print("Users conected ")
+
+            shuffle(self.satellites)
+            shuffle(self.satellites)
+
+            for sat in self.satellites:
+                # TODO: conect to the closest , maybe we dont need that ?
+                # all los -> select the closest
+                # Time O(n  * m )
+                if self.has_los_earth_sat(sat.sat_xyz, user_xyz):
+                    self.network.add_edge(f"{sat.satellite_id}_out", user.user_id, capacity=INFINITY)
+
+                    # this is for see how many conected user in each
+                    # sat.connected_users+=1 # update the number of
+                    # m_set.add(sat.satellite_id)
+                    #
+                    # if  sat.satellite_id in connected_sats :
+                    #     connected_sats[sat.satellite_id] = connected_sats[sat.satellite_id]+1
+                    # else :
+                    #     connected_sats[sat.satellite_id] = 1
+
+                    break  # Connect only once
+
+        # print(f"all conected satts are {m_set} , len= {len(m_set)}")
+        # connected_sats_sorted = sorted(connected_sats.values())
+        #
+        # # '''
+        # # Plot the distribution
+        # plt.figure(figsize=(8, 5))
+        # plt.plot(connected_sats_sorted, marker='o', linestyle='-', color='b', label="User Distribution")
+        #
+        # # Labels and title
+        # plt.xlabel("Satellite Index (Sorted)")
+        # plt.ylabel("Number of Users Connected")
+        # plt.title("Distribution of Users Across Satellites")
+        # plt.legend()
+        # plt.grid(True)
+        # # Display total user count on the graph
+        # plt.text(0.5, 0.9, f"Total groups of : {sum(connected_sats.values())}",
+        #          transform=plt.gca().transAxes, fontsize=12,
+        #          bbox=dict(facecolor='white', alpha=0.8))
+        # # Show the plot
+        # plt.show()
+        # for k , v in connected_sats.items() :
+        #     print(f"{k} : {v}")
+        # '''
+
+
+        # Extract values (user counts)
+        # user_counts = list(connected_sats.values())
+        #
+        # # Calculate total users
+        # total_users = sum(user_counts)
+        #
+        # # Create histogram
+        # plt.figure(figsize=(8, 5))
+        # plt.hist(user_counts, bins=5, edgecolor='black', alpha=0.7, color='b')
+        #
+        # # Labels and title
+        # plt.xlabel("Number of Users Connected")
+        # plt.ylabel("Frequency of Satellites")
+        # plt.title("Histogram of User Connections per Satellite")
+        #
+        # # Display total user count
+        # plt.text(0.6, 0.9, f"Total Users: {sum(user_counts)}",
+        #          transform=plt.gca().transAxes, fontsize=12,
+        #          bbox=dict(facecolor='white', alpha=0.8))
+        #
+        # plt.grid(axis='y', linestyle='--', alpha=0.7)
+        #
+        # # Show the plot
+        # plt.show()
 
         # ADD the Root User
         self.network.add_node(ROOT_USER, type=Graph_nodes.User)
+        for user in users:
+            capacity = CAPACITY.S2U.value * group_size
 
-        for user in self.users:
-            self.network.add_edge(user.user_id, ROOT_USER, capacity=CAPACITY.S2U.value * k)
+            self.network.add_edge(user.user_id, ROOT_USER, capacity = capacity)
+            # 50 * 2 = 100GB * 5000 = 500,000
+
 
     def simulate_max_flow(self, source, sink):
         """
@@ -188,28 +207,28 @@ class GraphUtils :
         - flow_dict: The flow distribution in the network.
         """
         # Use the Edmonds-Karp algorithm to compute max flow
-        max_flow_value, flow_dict = nx.maximum_flow(self.network, source, sink, capacity='capacity' )
+        max_flow_value, flow_dict = nx.maximum_flow(self.network, source, sink, capacity='capacity' ,
+                                                    flow_func=nx.algorithms.flow.shortest_augmenting_path  )
         return max_flow_value, flow_dict
 
-    def has_line_of_sight_sat_to_sat(self , pos1_xyz, pos2_xyz):
+    def has_los_sat_sat(self, pos1_xyz, pos2_xyz):
         """
-        # check LOS (line of sight) between two satellites
-        :param pos1_xyz:
-        :param pos2_xyz:
-        :return: True If the midpoint is outside Earth's radius,
-         meaning satellites have a line of sight, False Otherwise
+        Check line of sight for multiple satellite pairs using batch processing.
+        :param pos1_xyz: Array of XYZ positions for satellite 1 (N x 3).
+        :param pos2_xyz: Array of XYZ positions for satellite 2 (N x 3).
+        :return: Boolean array indicating line of sight for each pair.
         """
-        # Vector between satellites
-        vector = np.array(pos2_xyz) - np.array(pos1_xyz)
-        midpoint = np.array(pos1_xyz) + 0.5 * vector
+        # Calculate vectors and midpoints
+        vectors = pos2_xyz - pos1_xyz
+        midpoints = pos1_xyz + 0.5 * vectors
 
-        # Distance of the midpoint from Earth's center
-        distance_to_earth_center = np.linalg.norm(midpoint)
+        # # Calculate distances from Earth's center
+        distances = np.linalg.norm(midpoints)
 
-        # If the midpoint is outside Earth's radius, satellites have a line of sight
-        return distance_to_earth_center > wgs84.polar_radius.km
+        # Check if distances are greater than Earth's radius
+        return distances > EARTH_RADIUS
 
-    def has_line_of_sight_sat_to_ground_station(self , sat_xyz, ground_xyz , default_distance = 2000):
+    def has_los_earth_sat(self , sat_xyz, ground_xyz ):
         """
         # check LOS (line of sight) between a satellite and ground station
         :param pos1_xyz:
@@ -218,57 +237,49 @@ class GraphUtils :
         """
         # Calculate Euclidean distance
         distance = np.linalg.norm(sat_xyz - ground_xyz)
-        # 1760 for user
+
         return distance < default_distance
 
     def shortest_path(self, start, end) -> list:
         """Find the shortest path between two satellites."""
         return  nx.shortest_path(self.network , start , end )
 
-    def calculate_avg_of_medians(self):
-        """
-        Calculate the average of the median distances between satellites that can see each other.
+    def save_flow_most_used_node(self , flow_dict):
+        """Get nodes that are most involved in the flow.
+        only the _in nodes """
+        node_flow_list = []
+        m_net = self.network
 
-        :param satellites: A dictionary where keys are satellite names and values are XYZ coordinates (e.g., {'sat1': [x, y, z], ...}).
-        :return: The average of the median distances.
-        only used to calculate determinate the user conenct to satlite distance
-        """
-        medians = []
-
-        for sat1_name, sat1 in self.satellites_dict_lats_longs.items():
-            distances = []
-            for sat2_name, sat2 in self.satellites_dict_lats_longs.items():
-                if sat1_name != sat2_name:
-                    sat1_xyz = sat1[2]
-                    sat2_xyz = sat2[2]
-                    if self.has_line_of_sight_sat_to_sat(sat1_xyz, sat2_xyz):
-                        # Calculate Euclidean distance
-                        distance = np.linalg.norm(np.array(sat1_xyz) - np.array(sat2_xyz))
-                        distances.append(distance)
-            if distances:
-                # Calculate the median distance for the current satellite
-                median_distance = np.average(distances)
-                medians.append(median_distance)
-
-        if medians:
-            # Calculate the average of all median distances
-            avg_of_medians = np.average(medians)
-            return avg_of_medians
-        # returnd 3515 for file 3tle.full
-
-
-        return 0  # If there are no medians, return 0
-
-    def get_most_used_nodes(self , flow_dict):
-        """Get nodes that are most involved in the flow."""
-        node_flow = {}
         for u, flows in flow_dict.items():
-            total_flow = sum(flows.values())
-            node_flow[u] = total_flow
+            if u.endswith("_in"):
+                lat = m_net.nodes._nodes[u]["lat"]
+                lon = m_net.nodes._nodes[u]["lon"]
+
+                total_flow = sum(flows.values())
+                sat = Satellite(satellite_id=u ,latitude=lat , longitude=lon,altitude=None ,sat_xyz=None,
+                                total_flow= total_flow)
+                node_flow_list.append(sat)
 
         # Sort nodes by total flow
-        sorted_nodes = sorted(node_flow.items(), key=lambda x: x[1], reverse=True)
-        return sorted_nodes
+        sorted_nodes = sorted(node_flow_list, key=lambda sat: sat.total_flow, reverse=True)
+
+        # l = 12
+        # print(sorted_nodes[0].total_flow)
+        # print(sorted_nodes[-1].total_flow)
+
+
+        self.node_flows = sorted_nodes
+
+    def get_max_flow_satellites(self):
+        return self.node_flows
+
+    def get_max_flow_value(self):
+        return self.network_max_flow
+
+    def get_max_flow_nodes(self)->dict:
+        return self.node_flows
+
+
 
 
 ## Static methods
