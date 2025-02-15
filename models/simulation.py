@@ -1,40 +1,98 @@
 from models.graph_utils import  GraphUtils
+from  models.ground_control import  GroundControl
+from skyfield.api import load
+from datetime import timedelta
+from  models.file_manager import  FileManager
+from  models.satellite import  Satellite
+import  re
+import  pickle
+from random import  shuffle
+import models.utils as utils
+from  models.user import  User
+from models.graph_utils import  CAPACITY
 class Simulation:
-    def __init__(self,graphUtils:GraphUtils):
-        self.graphUtils = graphUtils
 
-    def run(self, scenario: dict):
-        """Run the simulation for a specific scenario."""
-        # find path of sight
-
-        # sat1= "STARLINK-1240"
-        # sat2 = "STARLINK-1201"
-
-        sat1= "STARLINK-1308"
-        sat2 = "STARLINK-1262"
+    def __init__(self, gc:GroundControl , users):
+        self.gc = gc
+        # self.users_list = users
+        self.users = users
+        self.users_length = len(self.users)
+        self.res = []
+        self.simulate_timestamps()
 
 
-        if self.graphUtils.is_path_exist(sat1,sat2):
-            l = self.graphUtils.shortest_path(sat1  , sat2)
+    def simulate_timestamps(self):
+        # Initialize timescale
+        ts = load.timescale()
+        now = ts.now()
 
-            print(f"path from {sat1}->{sat2}=={l}")
-        else:
-            print(f"no path from {sat1}->{sat2}")
+        # Generate timestamps with 10-minute intervals for 90 minutes
+        interval_minutes = 10
+        total_duration_minutes = 90
+        time_stamps = [ts.now() + timedelta(minutes=i)
+                       for i in range(0, total_duration_minutes , interval_minutes)]
+
+        print(f"len of time tamps = {len(time_stamps)}")
+
+        # create the max flow
+        sats = []
+        flows = []
+
+        for m_time in time_stamps:
+            # Create sats
+            sat_i = self._create_my_satellites(m_time)
+
+            # build max flow graph
+            graph_utils = GraphUtils(ground_control= self.gc, ground_users=self.users, sats=sat_i )
+
+            flow_sats = graph_utils.get_max_flow_satellites()
+            flow_value = graph_utils.get_max_flow_value()
+
+            current_flow_holder = {
+                "time":m_time,
+                "flow_sats": flow_sats,
+                "flow_value_GB": flow_value ,
+                "user_group_count" : self.users_length,
+                "capacity" : {
+                    "s2s" : CAPACITY.S2S.value ,
+                    "s2g": CAPACITY.S2G.value,
+                    "s2u": CAPACITY.S2U.value,
+                }
+            }
+
+            self.res.append(current_flow_holder)
 
 
-    def scenario_number_1(self):
-        """What scenario goes here ?"""
-        # random  locations for 2  user with distance longer than 4000
-        # random  locations for 2  users  beside each other ( same lat and long)
-        # distribute users across the world uniformly !! how to do ?
-        # all users in highly dense urban city
-        # and more ...
 
-    def update(self, delta_time: float):
-        """Update the positions of satellites and state of the simulation."""
-        pass
-    def stop(self ):
-        """Stop the simulation for a specific scenario."""
-        pass
+        globall = "global"
+        usa = "USA"
+        usa_ca_aus_eu = "usa_ca_aus_eu"
 
+
+        file_name = f"max_flow_full_day_s2s_{CAPACITY.S2S.value}_{globall}_{self.users_length}"
+        with open(file_name, 'wb') as file:
+            pickle.dump(self.res, file)
+
+    def _create_my_satellites(self , m_time ):
+        fm = FileManager()
+        file_data = fm.load_tle_file_into_list()
+
+        temp = []
+        for sat in file_data:
+            geometry = sat.at(m_time)
+            subpoint = geometry.subpoint()
+            sat_elevation = subpoint.elevation.km
+
+            if  600 > sat_elevation > 500  :
+                sat_lat = subpoint.latitude.degrees
+                sat_lng = subpoint.longitude.degrees
+
+                sat_xyz = geometry.position.km
+                # "Starlink-1008" will be now "1008", faster
+                sat_name  = re.search(r"-(\d+)$",  sat.name).group(1)
+                satellite = Satellite(sat_name, latitude=sat_lat, longitude=sat_lng, altitude=sat_elevation,
+                                      sat_xyz=sat_xyz ,total_flow=None)
+                temp.append(satellite)
+        shuffle(temp)
+        return temp
 

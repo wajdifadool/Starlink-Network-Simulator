@@ -10,6 +10,7 @@ from skyfield.iokit import parse_tle_file
 from skyfield.api import load
 
 from  models.ground_control import GroundControl
+from models.ground_station import   GroundStation
 from models.satellite import Satellite
 import  models.utils as utils
 
@@ -52,14 +53,14 @@ class SatelliteTracker(QMainWindow):
 
         # Initial plotting
         self.satellite_scatter = None
-        self.plot_satellites()
-        self.plot_stations()
+        # self.plot_satellites()
+        # self.plot_stations()
         self.plot_users()
 
         # Set up timer for updates
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_satellite_positions)
-        self.timer.start(self.update_interval)  # Update every X seconds
+        # self.timer = QTimer(self)
+        # self.timer.timeout.connect(self.update_satellite_positions)
+        # self.timer.start(self.update_interval)  # Update every X seconds
 
     def plot_satellites(self):
         """Plot satellites on the map."""
@@ -70,16 +71,15 @@ class SatelliteTracker(QMainWindow):
             annotation.remove()
         self.satellite_annotations.clear()
 
-
-        lats_longs = self.gc.fetch_lat_long()
-        latitudes = lats_longs[0]
-        longitudes = lats_longs[1]
-
+        lats =[]
+        longs=[]
+        lats = [sat.latitude for sat  in self.gc.my_satellites]
+        longs = [sat.longitude for sat in self.gc.my_satellites]
 
         # Plot satellites as red points
         self.satellite_scatter = self.ax.scatter(
-            longitudes,
-            latitudes,
+            longs,
+            lats,
             color='red',
             s=3,
             marker="s",
@@ -90,29 +90,30 @@ class SatelliteTracker(QMainWindow):
         self.canvas.draw()
 
     # plot stasions names , used for debuging
-    def plot_stations_names(self):
-        # Annotate each satellite with its name
-        for name, (lat, lon, _) in self.gc.dict_name_lat_lng.items():
-            annotation = self.ax.annotate(
-                name,
-                xy=(lon, lat),
-                xytext=(3, 3),  # Offset the text slightly
-                textcoords='offset points',
-                fontsize=6,
-                color='black',
-                transform=ccrs.PlateCarree(),
-            )
-            self.satellite_annotations.append(annotation)
+    # def plot_stations_names(self):
+    #     # Annotate each satellite with its name
+    #     for name, (lat, lon, _) in self.gc.dict_name_lat_lng.items():
+    #         annotation = self.ax.annotate(
+    #             name,
+    #             xy=(lon, lat),
+    #             xytext=(3, 3),  # Offset the text slightly
+    #             textcoords='offset points',
+    #             fontsize=6,
+    #             color='black',
+    #             transform=ccrs.PlateCarree(),
+    #         )
+    #         self.satellite_annotations.append(annotation)
 
     def plot_stations(self):
-        gs_tuples = self.gc.ground_stations_long_lats
-        latitudes = gs_tuples[0]
-        longitudes = gs_tuples[1]
+        my_gc = self.gc.my_ground_stations
+
+        lats = [gs.latitude for gs in my_gc]
+        longs = [gs.longitude for gs in my_gc]
 
         # Plot stations as blue squares
         self.ax.scatter(
-            longitudes,
-            latitudes,
+            longs,
+            lats,
             color="blue",
             s=5,
             transform=ccrs.PlateCarree(),
@@ -125,18 +126,21 @@ class SatelliteTracker(QMainWindow):
         if self.satellite_scatter:
             self.satellite_scatter.remove()
 
-        self.gc.refresh_dict_lat_lng()
+        self.gc.refresh_my_satellites() # todo , calulate it in the background beforecalling
         self.plot_satellites()
 
     def plot_users(self):
-        latitudes = [user.lat for user in self.users]
-        longitudes =[user.lon for user in self.users]
+
+        my_users = self.users
+
+        lats = [user.lat for user in my_users]
+        longs = [user.lon for user in my_users]
 
         self.ax.scatter(
-            longitudes,
-            latitudes,
+            longs,
+            lats,
             color="green",
-            s=5,
+            s=3,
             transform=ccrs.PlateCarree(),
             marker="s",
         )

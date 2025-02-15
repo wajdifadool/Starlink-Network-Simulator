@@ -1,48 +1,40 @@
 from models.ground_control import GroundControl
 from visualization.satellite_tracker import SatelliteTracker
 from PyQt5.QtWidgets import QApplication
+import logging
 
 from models.graph_utils import  GraphUtils
 from models.simulation import  Simulation
-import models.utils as utils
-import logging
-import threading
+from  visualization.flow_visual import FlowVisual
 
+import models.utils as utils
 
 def main():
-    # Configure the logger
-    # logging.basicConfig(
-    #     level=logging.DEBUG,  # Set the minimum log level
-    #     format='%(asctime)s - %(levelname)s - %(message)s'  # Format of the log message
-    # )
-    # # Supress matplotlib debug loging
-    # logging.getLogger('matplotlib').setLevel(logging.ERROR)
 
-    # Init ground Controls object
+    # init ground control !
     ground_control = GroundControl()
 
-    # generate users
-    users = utils.generate_ground_users(10)
+    # Create Users
+    users1 = utils.generate_ground_users_1(5000) # ALL OVER EARTH
+    users2 = utils.generate_ground_users_2(5000) # United States
+    users3 = utils.generate_ground_users_3(5000) # Europe, USA, Canada, and Australia.
 
-    # Init Graph utils
-    graphs = GraphUtils(ground_control , users)
+
+    # this is for creating the graph and the max flow
+    simulation = Simulation(ground_control , users1 )
+
+    # flow_visual = FlowVisual(ground_control)
 
 
-    # init simulations
-    # simulation = Simulation(graphs)
-    # simulation.run(None)
-
+    # """
     # Init app visualization
-    app = QApplication([])
-    tracker = SatelliteTracker(ground_control , users=users)
-    tracker.show()
-    app.exec_()
+    # app = QApplication([])
+    # tracker = SatelliteTracker(ground_control , users3)
+    # tracker.show()
+    # app.exec_()
 
 
-
-
-
-
+    # init max_flow visual
 
 if __name__ == "__main__":
     main()
